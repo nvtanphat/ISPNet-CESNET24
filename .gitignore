@@ -1,0 +1,37 @@
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+*/.ipynb_checkpoints/
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Large Parquet Data Files
+data/preprocessed/*.parquet
+data/preprocessed/scalers/
+data/raw/
+*.parquet
+
+# Large Model Checkpoints
+*.pt
+*.pth
+*.ckpt
+results/**/*.pt
+results/daily/baselines/*.pt
+results/daily/proposed/*.pt
+results/daily/proposed_subnets/*.pt
+results/weekly/baselines/*.pt
+results/weekly/baselines_subnets/*.pt
+results/weekly/proposed/*.pt
+results/weekly/proposed_subnets/*.pt
+
+# Archives and Zip files
+*.zip
+results/archives/
+
+# OS and IDE files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

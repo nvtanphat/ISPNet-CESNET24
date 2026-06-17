@@ -1,0 +1,62 @@
+{
+  "data_root": "D:\\Paper\\CESNET-TimeSeries24\\data",
+  "out_root": "D:\\Paper\\CESNET-TimeSeries24\\preprocessed",
+  "aggregation": "agg_1_hour",
+  "total_slots": 6718,
+  "date_range": {
+    "start": "2023-10-09 00:00:00+00:00",
+    "end": "2024-07-14 21:00:00+00:00"
+  },
+  "split": {
+    "protocol": "14/2/24 weeks (arXiv:2503.17410)",
+    "train_end": 2352,
+    "val_end": 2688,
+    "train_weeks": 14,
+    "val_weeks": 2
+  },
+  "outage_window": {
+    "start_id": 5376,
+    "end_id": 5903,
+    "start_dt": "2024-05-20 00:00:00+00:00",
+    "end_dt": "2024-06-10 23:00:00+00:00",
+    "n_slots": 528,
+    "note": "Sensor probe failure (EDA Step 8); use as robustness test slice"
+  },
+  "target": "n_bytes",
+  "count_cols": [
+    "n_flows",
+    "n_packets",
+    "n_bytes",
+    "sum_n_dest_asn",
+    "sum_n_dest_ports",
+    "sum_n_dest_ip"
+  ],
+  "ratio_cols": [
+    "tcp_udp_ratio_packets",
+    "tcp_udp_ratio_bytes",
+    "dir_ratio_packets",
+    "dir_ratio_bytes"
+  ],
+  "feature_cols": [
+    "n_flows",
+    "n_packets",
+    "tcp_udp_ratio_bytes",
+    "dir_ratio_bytes",
+    "avg_duration",
+    "avg_ttl"
+  ],
+  "transform": "log1p on count columns",
+  "scaler": "RobustScaler per entity, fit on train-split observed log1p(n_bytes)",
+  "missing_policy": {
+    "target": "NaN (mask-aware loss \u2014 do NOT zero-fill)",
+    "ratio_cols": "fill 0.5 (neutral, no TCP/UDP preference)",
+    "other_cols": "NaN / 0.0 (not used in target loss)"
+  },
+  "eda_reference": "eda-report.md (8 steps, 6718 slots)",
+  "references": {
+    "dataset_paper": "https://www.nature.com/articles/s41597-025-04603-x",
+    "benchmark": "arXiv:2503.17410 \u2014 Comparative Analysis of DL Models for ISP Forecasting",
+    "zenodo": "https://zenodo.org/records/13382427"
+  },
+  "created_at": "2026-06-10T03:17:44.887892Z"
+}
