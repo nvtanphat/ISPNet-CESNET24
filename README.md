@@ -21,11 +21,23 @@ Dự án thực hiện mô hình hóa và dự báo lưu lượng băng thông t
 
 ## 🧠 Kiến trúc Mô hình Đề xuất: ISPNet
 
-Dự báo lưu lượng trên hàng trăm thực thể mạng khác nhau (từ các mạng con nghiên cứu quy mô nhỏ cho đến các trường đại học quốc gia lớn) là một thách thức cực kỳ lớn do tính chất quy mô và baseline lưu lượng chênh lệch cao. **ISPNet** giải quyết vấn đề này thông qua 3 nguyên lý thiết kế cốt lõi:
+Dự báo lưu lượng trên hàng trăm thực thể mạng khác nhau (từ các mạng con nghiên cứu quy mô nhỏ cho đến các trường đại học quốc gia lớn) là một thách thức cực kỳ lớn do tính chất quy mô và baseline lưu lượng chênh lệch cao. **ISPNet** được xây dựng dựa trên cấu trúc **GRU Encoder-Decoder** (2 lớp, ẩn 64, dropout 0.4) và giải quyết các bài toán trên thông qua các nguyên lý thiết kế cốt lõi sau:
 
-1. **Khung Temporal Backbone dùng chung (Shared Temporal Backbone)**: Sử dụng một mạng neural thống nhất (như TCN, PatchTST, hoặc iTransformer) để học các đặc trưng động và các quy luật biến đổi thời gian chung, phức tạp của lưu lượng mạng ISP.
-2. **Cơ chế tra cứu độ lệch đầu ra cho từng thực thể (Per-Entity Output Bias Lookup - `nn.Embedding`)**: Sử dụng một lớp nhúng nhúng (embedding layer) được khởi tạo bằng 0 để ánh xạ mã định danh (ID) của 283 thực thể mạng, từ đó cộng thêm một độ lệch học được (learnable bias) riêng biệt cho từng thực thể. Cơ chế này giúp nắm bắt chính xác mức baseline lưu lượng và quy mô riêng của từng thực thể mà không làm ảnh hưởng đến không gian biểu diễn thời gian chung.
-3. **Hàm mất mát Masked Huber Loss tối ưu cho ISP**: Cấu hình với tham số $\delta = 1.0$ (tương ứng với 1 IQR của dữ liệu lưu lượng sau chuẩn hóa). Hàm loss này đóng vai trò bình phương (quadratic) đối với các sai số nhỏ và tuyến tính (linear) đối với các đỉnh đột biến lớn, giúp ngăn chặn hiện tượng các khoảng trống mất dữ liệu telemetry kéo đạo hàm về 0.
+1. **Chuẩn hóa động theo cửa sổ có xét mặt nạ (Mask-Aware Reversible Instance Normalization - RevIN)**:
+   Để chống lại sự trôi dịch phân phối (distribution shift) và biến động mức nền thời gian, thống kê trung bình ($\mu$) và phương sai ($\sigma^2$) được tính động theo từng cửa sổ đầu vào $X = [x_1, x_2, \dots, x_L]$ nhưng **chỉ dựa trên các vị trí có dữ liệu telemetry thực tế** (nơi mặt nạ quan sát $m_t = 1$):
+   $$\mu = \frac{\sum_{t=1}^L m_t x_t}{\sum_{t=1}^L m_t + \epsilon}, \quad \sigma^2 = \frac{\sum_{t=1}^L m_t (x_t - \mu)^2}{\sum_{t=1}^L m_t + \epsilon}$$
+   Với $\epsilon = 10^{-5}$ để tránh chia cho 0. Dữ liệu sau đó được chuẩn hóa thành $\tilde{x}_t = \frac{x_t - \mu}{\sqrt{\sigma^2 + \epsilon}}$ trước khi đưa vào mô hình GRU:
+   $$h_t = \text{GRU}([\tilde{x}_t, c_t, m_t], h_{t-1})$$
+   (trong đó $c_t$ là các đặc trưng lịch thời gian).
+
+2. **Thành phần bù độ lệch theo từng thực thể (Per-Entity Output Bias - $b_{e,h}$)**:
+   Để bù đắp sự chênh lệch quy mô lưu lượng khổng lồ giữa các thực thể (lên tới $8.26 \times 10^7$ lần), một lớp nhúng nhúng (`nn.Embedding` kích thước $N_{entities} \times H$, khởi tạo bằng 0) được sử dụng để ánh xạ ID của thực thể mạng thành một độ lệch cụ thể cho từng bước dự báo $h$, cộng trực tiếp vào đầu ra sau khi đã được giải chuẩn hóa về thang logarit:
+   $$\hat{y}_{t+h}^{\log} = \hat{z}_{t+h}\sqrt{\sigma^2 + \epsilon} + \mu + b_{e,h}$$
+   Cơ chế này giúp giữ nguyên cấu trúc tham số backbone GRU gọn nhẹ (88.009 tham số ở cấp tổ chức) nhưng vẫn cá nhân hóa dự báo hiệu quả cho từng thực thể.
+
+3. **Hàm mất mát Masked Huber Loss tối ưu cho ISP**:
+   Hàm Huber Loss được cấu hình với $\delta = 1.0$ (tương ứng với 1 IQR của dữ liệu lưu lượng sau chuẩn hóa), hoạt động bình phương cho sai số nhỏ và tuyến tính cho các đỉnh xung đột biến (traffic spikes). Hàm mất mát chỉ được tính toán tại các thời điểm có telemetry thực sự (tránh rò rỉ hoặc bị kéo đạo hàm bởi các điểm khuyết telemetry):
+   $$\mathcal{L} = \frac{\sum_{h=1}^H m_{t+h} H_\delta(r_{t+h})}{\sum_{h=1}^H m_{t+h} + \epsilon}$$
 
 ---
 
@@ -127,17 +139,20 @@ Mở và chạy tuần tự các notebook trong thư mục `notebooks/`:
 Nếu bạn sử dụng repository này hoặc các kết quả từ báo cáo đồ án tốt nghiệp này phục vụ cho nghiên cứu của mình, vui lòng trích dẫn theo định dạng sau:
 
 ```bibtex
-@thesis{nvtanphat2026ispnet,
-  author       = {Nguyen Van Tan Phat},
-  title        = {Deep Learning for Large-Scale Heterogeneous ISP Network Traffic Forecasting},
-  school       = {Graduation Thesis Report},
+@thesis{phatvunguyen2026deep,
+  author       = {Nguyễn Văn Tấn Phát and Đoàn Anh Vũ and Nguyễn Hồng Nguyên},
+  title        = {Xây dựng và đánh giá mô hình học sâu cho dự báo chuỗi thời gian lưu lượng mạng ISP},
+  school       = {Phân hiệu Trường Đại học Thủy lợi},
   year         = {2026},
+  type         = {Đồ án tốt nghiệp đại học},
   url          = {https://github.com/nvtanphat/ISPNet-CESNET24}
 }
 ```
 
 ## ✉️ Liên hệ
 
-Mọi thắc mắc hoặc nhu cầu hợp tác nghiên cứu vui lòng liên hệ:
-* **Tác giả**: Nguyễn Văn Tấn Phát
-* **GitHub**: [@nvtanphat](https://github.com/nvtanphat)
+Mọi thắc mắc hoặc nhu cầu hợp tác nghiên cứu vui lòng liên hệ các tác giả của đồ án:
+* **Nguyễn Văn Tấn Phát** - GitHub: [@nvtanphat](https://github.com/nvtanphat)
+* **Đoàn Anh Vũ**
+* **Nguyễn Hồng Nguyên**
+* **Giảng viên hướng dẫn**: TS. Hoàng Văn Quý
