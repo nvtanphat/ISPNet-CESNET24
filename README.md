@@ -27,21 +27,6 @@ Predicting traffic across hundreds of heterogeneous network entities (ranging fr
 2. **Per-Entity Output Bias Lookup (`nn.Embedding`)**: A zero-initialized embedding layer matches the identifier of each of the 283 entities and adds an entity-specific learnable bias. This captures individual traffic baselines and scales without interfering with the shared temporal representation.
 3. **ISP-Traffic-Aware Masked Huber Loss**: Configured with $\delta = 1.0$ (matching $1\text{ IQR}$ of the scaled traffic), it acts quadratically for small residuals and linearly for large spikes, preventing Telemetry gaps from biasing gradients to zero.
 
-### Architecture Flowchart
-
-```mermaid
-graph TD
-    A[Input Time Series Traffic] --> B[Shared Temporal Backbone<br>TCN / PatchTST / iTransformer]
-    C[Entity ID] --> D[Per-Entity Bias Lookup<br>nn.Embedding]
-    B --> E[Shared Temporal Representation]
-    D --> F[Entity-Specific Learnable Bias]
-    E --> G["Combined Output (+)"]
-    F --> G
-    G --> H[Predicted Traffic]
-    H --> I[Masked Huber Loss]
-    J[Observed Mask / Telemetry Gap Info] --> I
-```
-
 ---
 
 ## 📊 Benchmark Results
