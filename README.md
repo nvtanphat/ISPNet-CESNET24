@@ -25,7 +25,22 @@ Predicting traffic across hundreds of heterogeneous network entities (ranging fr
 
 1. **Shared Temporal Backbone**: A unified neural network (e.g., TCN, PatchTST, or iTransformer) learns the shared, complex temporal dynamics of ISP network traffic.
 2. **Per-Entity Output Bias Lookup (`nn.Embedding`)**: A zero-initialized embedding layer matches the identifier of each of the 283 entities and adds an entity-specific learnable bias. This captures individual traffic baselines and scales without interfering with the shared temporal representation.
-3. **ISP-Traffic-Aware Masked Huber Loss**: Configured with $\delta = 1.0$ (matching $1\text{ IQR}$ of the scaled traffic), it acts quadratically for small residuals and linearly for large spikes, preventingTelemetry gaps from biasing gradients to zero.
+3. **ISP-Traffic-Aware Masked Huber Loss**: Configured with $\delta = 1.0$ (matching $1\text{ IQR}$ of the scaled traffic), it acts quadratically for small residuals and linearly for large spikes, preventing Telemetry gaps from biasing gradients to zero.
+
+### Architecture Flowchart
+
+```mermaid
+graph TD
+    A[Input Time Series Traffic] --> B[Shared Temporal Backbone<br>TCN / PatchTST / iTransformer]
+    C[Entity ID] --> D[Per-Entity Bias Lookup<br>nn.Embedding]
+    B --> E[Shared Temporal Representation]
+    D --> F[Entity-Specific Learnable Bias]
+    E --> G["Combined Output (+)"]
+    F --> G
+    G --> H[Predicted Traffic]
+    H --> I[Masked Huber Loss]
+    J[Observed Mask / Telemetry Gap Info] --> I
+```
 
 ---
 
@@ -48,7 +63,9 @@ The repository is organized following professional data science project layouts:
 
 ```
 ISPNet-CESNET24/
-  ├── BaoCaoDoAn_TimeSeries.docx        # Graduation Thesis Report
+  ├── BaoCaoDoAn_TimeSeries.docx        # Graduation Thesis Report (DOCX version)
+  ├── BaoCaoDoAn_TimeSeries.pdf         # Graduation Thesis Report (PDF version)
+  ├── requirements.txt                  # Python package dependencies
   ├── data/                             # Data files
   │     ├── raw/                        # Original source data (ignored in git)
   │     └── preprocessed/               # Preprocessed parquets (ignored in git)
@@ -94,15 +111,48 @@ git clone https://github.com/nvtanphat/ISPNet-CESNET24.git
 cd ISPNet-CESNET24
 pip install -r requirements.txt
 ```
-*(Dependencies include: `torch`, `numpy`, `pandas`, `matplotlib`, `scikit-learn`, `pyarrow`, and `fastparquet`)*
 
 ### 2. Dataset Setup
-1. Download the raw **CESNET-TimeSeries24** dataset.
-2. Extract the dataset files into the `data/raw/` directory.
+You can set up the dataset in one of two ways:
+
+* **Option A: Preprocessed Dataset (Recommended & Faster)**:
+  Download our preprocessed dataset directly from [Kaggle: CESNET-TimeSeries24 Preprocessed](https://www.kaggle.com/datasets/nguynvntnpht/cesnet-timeseries24-preprocessed) and extract the contents into the `data/preprocessed/` directory. This allows you to skip the preprocessing notebooks and start running the model code directly.
+
+* **Option B: Raw Dataset**:
+  1. Download the raw **CESNET-TimeSeries24** dataset from the official [Nature Scientific Data Paper](https://www.nature.com/articles/s41597-025-04603-x).
+  2. Extract the dataset files into the `data/raw/` directory.
 
 ### 3. Pipeline Execution
 Run the notebooks in sequential order:
-1. **Preprocessing**: Open and run [01_preprocessing_pipeline.ipynb](notebooks/01_preprocessing_pipeline.ipynb) to clean the telemetry and generate parquet features.
+1. **Preprocessing**: (Skip this if you used Option A for dataset setup) Open and run [01_preprocessing_pipeline.ipynb](notebooks/01_preprocessing_pipeline.ipynb) to clean the telemetry and generate parquet features.
 2. **Classical Baselines**: Run [03_classical_baselines.ipynb](notebooks/03_classical_baselines.ipynb) and [04_sarima_baseline.ipynb](notebooks/04_sarima_baseline.ipynb).
 3. **Deep Learning Baselines**: Run the notebooks starting with `05_` to train and evaluate LSTM, GRU, TCN, PatchTST, and iTransformer.
 4. **ISPNet**: Run the notebooks starting with `06_` to train the proposed ISPNet and generate comparison tables against the baselines.
+
+---
+
+## 📚 References
+
+* **Official Dataset Paper**: ["CESNET-TimeSeries24: A dataset of network traffic time series at the institution and subnet level"](https://www.nature.com/articles/s41597-025-04603-x) (Scientific Data, 2025).
+
+---
+
+## 📜 Citation
+
+If you find this repository or the graduation thesis helpful for your research, please cite it as:
+
+```bibtex
+@thesis{nvtanphat2026ispnet,
+  author       = {Nguyen Van Tan Phat},
+  title        = {Deep Learning for Large-Scale Heterogeneous ISP Network Traffic Forecasting},
+  school       = {Graduation Thesis Report},
+  year         = {2026},
+  url          = {https://github.com/nvtanphat/ISPNet-CESNET24}
+}
+```
+
+## ✉️ Contact
+
+For any questions or collaborations, please contact:
+* **Author**: Nguyen Van Tan Phat
+* **GitHub**: [@nvtanphat](https://github.com/nvtanphat)
