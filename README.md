@@ -1,9 +1,14 @@
-# ISPNet-CESNET24: Học sâu Dự báo Lưu lượng Mạng cấp ISP (ISP-Level Network Traffic Forecasting)
+<div align="center">
+
+# 🌐 ISPNet-CESNET24
+### Học Sâu Dự Báo Lưu Lượng Mạng Cấp ISP (ISP-Level Network Traffic Forecasting)
 
 [![Python 3.12](https://img.shields.io/badge/python-3.12-blue.svg)](https://www.python.org/)
 [![PyTorch 2.0+](https://img.shields.io/badge/pytorch-2.0%2B-orange.svg)](https://pytorch.org/)
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-yellowgreen.svg)](https://opensource.org/licenses/Apache-2.0)
 [![Jupyter Notebooks](https://img.shields.io/badge/Jupyter-Notebooks-orange.svg)](https://jupyter.org/)
+
+</div>
 
 Repository này chứa mã nguồn triển khai **ISPNet** — một mô hình học sâu (deep learning framework) cho bài toán dự báo lưu lượng băng thông mạng diện rộng của Nhà cung cấp dịch vụ Internet (ISP), được thử nghiệm trên bộ dữ liệu thực tế **CESNET-TimeSeries24**.
 
@@ -131,6 +136,7 @@ Mở và chạy tuần tự các notebook trong thư mục `notebooks/`:
 ## 📚 Tài liệu Tham khảo
 
 * **Bài báo chính thức của bộ dữ liệu**: ["CESNET-TimeSeries24: A dataset of network traffic time series at the institution and subnet level"](https://www.nature.com/articles/s41597-025-04603-x) (Scientific Data, 2025).
+* **Bài báo benchmark học sâu**: ["Comparative Analysis of Deep Learning Models for Real-World ISP Network Traffic Forecasting"](https://arxiv.org/abs/2503.17410) (arXiv:2503.17410, 2025).
 
 ---
 
