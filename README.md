@@ -1,130 +1,130 @@
-# ISPNet-CESNET24: Deep Learning for ISP-Level Network Traffic Forecasting
+# ISPNet-CESNET24: Học sâu Dự báo Lưu lượng Mạng cấp ISP (ISP-Level Network Traffic Forecasting)
 
 [![Python 3.12](https://img.shields.io/badge/python-3.12-blue.svg)](https://www.python.org/)
 [![PyTorch 2.0+](https://img.shields.io/badge/pytorch-2.0%2B-orange.svg)](https://pytorch.org/)
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-yellowgreen.svg)](https://opensource.org/licenses/Apache-2.0)
 [![Jupyter Notebooks](https://img.shields.io/badge/Jupyter-Notebooks-orange.svg)](https://jupyter.org/)
 
-This repository contains the implementation of **ISPNet**, a deep learning framework designed for large-scale, heterogeneous Internet Service Provider (ISP) network traffic forecasting, evaluated on the **CESNET-TimeSeries24** dataset.
+Repository này chứa mã nguồn triển khai **ISPNet** — một khung học sâu (deep learning framework) chuyên dụng cho bài toán dự báo lưu lượng băng thông mạng diện rộng, có độ hỗn tạp cao của Nhà cung cấp dịch vụ Internet (ISP), được thử nghiệm trên bộ dữ liệu thực tế **CESNET-TimeSeries24**.
 
-The project models and predicts hourly network bandwidth (in bytes) across **283 institutions and subnets** for both **24-hour** and **168-hour (1 week)** horizons.
-
----
-
-## 🚀 Key Highlights
-
-* **30% - 37% Relative SMAPE Reduction** compared to standard paper benchmarks.
-* **Outperforms 7 Deep Learning Baselines** (LSTM, GRU, TCN, DLinear, Transformer, PatchTST, iTransformer).
-* **Robust Telemetry Handling**: Integrates mask-aware noise augmentation and a specialized Masked Huber Loss to handle telemetry gaps (1.1% missing rate) and extreme traffic spikes.
+Dự án thực hiện mô hình hóa và dự báo lưu lượng băng thông theo giờ (tính bằng bytes) trên **283 tổ chức và mạng con (subnets)** cho cả hai khoảng thời gian dự báo (horizons): **24 giờ** và **168 giờ (1 tuần)**.
 
 ---
 
-## 🧠 Proposed Architecture: ISPNet
+## 🚀 Điểm nổi bật chính
 
-Predicting traffic across hundreds of heterogeneous network entities (ranging from small research subnets to large national universities) is highly challenging. ISPNet addresses this through three core design principles:
-
-1. **Shared Temporal Backbone**: A unified neural network (e.g., TCN, PatchTST, or iTransformer) learns the shared, complex temporal dynamics of ISP network traffic.
-2. **Per-Entity Output Bias Lookup (`nn.Embedding`)**: A zero-initialized embedding layer matches the identifier of each of the 283 entities and adds an entity-specific learnable bias. This captures individual traffic baselines and scales without interfering with the shared temporal representation.
-3. **ISP-Traffic-Aware Masked Huber Loss**: Configured with $\delta = 1.0$ (matching $1\text{ IQR}$ of the scaled traffic), it acts quadratically for small residuals and linearly for large spikes, preventing Telemetry gaps from biasing gradients to zero.
+* **Giảm từ 30% đến 37% chỉ số SMAPE** so với các mô hình baseline trung bình trong bài báo gốc của bộ dữ liệu.
+* **Vượt trội hơn 7 mô hình học sâu baseline phổ biến**: LSTM, GRU, TCN, DLinear, Transformer, PatchTST, và iTransformer.
+* **Xử lý telemetry thông minh**: Tích hợp cơ chế tăng cường nhiễu có quan sát mặt nạ (mask-aware noise augmentation) và hàm mất mát Masked Huber Loss cải tiến để xử lý triệt để các khoảng trống mất dữ liệu telemetry (tỷ lệ khuyết 1.1%) và các đỉnh xung đột đột biến (traffic spikes).
 
 ---
 
-## 📊 Benchmark Results
+## 🧠 Kiến trúc Mô hình Đề xuất: ISPNet
 
-Evaluated on the test split and outage windows, **ISPNet** shows massive improvements in **SMAPE** and **$R^2$** compared to local deep learning models and paper benchmarks:
+Dự báo lưu lượng trên hàng trăm thực thể mạng khác nhau (từ các mạng con nghiên cứu quy mô nhỏ cho đến các trường đại học quốc gia lớn) là một thách thức cực kỳ lớn do tính chất quy mô và baseline lưu lượng chênh lệch cao. **ISPNet** giải quyết vấn đề này thông qua 3 nguyên lý thiết kế cốt lõi:
 
-| Dataset | Horizon | Model | SMAPE (Test) | $R^2$ (Test) | SMAPE (Outage) | $R^2$ (Outage) | Relative SMAPE Improvement |
+1. **Khung Temporal Backbone dùng chung (Shared Temporal Backbone)**: Sử dụng một mạng neural thống nhất (như TCN, PatchTST, hoặc iTransformer) để học các đặc trưng động và các quy luật biến đổi thời gian chung, phức tạp của lưu lượng mạng ISP.
+2. **Cơ chế tra cứu độ lệch đầu ra cho từng thực thể (Per-Entity Output Bias Lookup - `nn.Embedding`)**: Sử dụng một lớp nhúng nhúng (embedding layer) được khởi tạo bằng 0 để ánh xạ mã định danh (ID) của 283 thực thể mạng, từ đó cộng thêm một độ lệch học được (learnable bias) riêng biệt cho từng thực thể. Cơ chế này giúp nắm bắt chính xác mức baseline lưu lượng và quy mô riêng của từng thực thể mà không làm ảnh hưởng đến không gian biểu diễn thời gian chung.
+3. **Hàm mất mát Masked Huber Loss tối ưu cho ISP**: Cấu hình với tham số $\delta = 1.0$ (tương ứng với 1 IQR của dữ liệu lưu lượng sau chuẩn hóa). Hàm loss này đóng vai trò bình phương (quadratic) đối với các sai số nhỏ và tuyến tính (linear) đối với các đỉnh đột biến lớn, giúp ngăn chặn hiện tượng các khoảng trống mất dữ liệu telemetry kéo đạo hàm về 0.
+
+---
+
+## 📊 Kết quả Thực nghiệm
+
+Được đánh giá trên tập kiểm thử (Test Split) và trong các khoảng thời gian xảy ra sự cố telemetry (Outage Windows), **ISPNet** thể hiện sự vượt trội vượt bậc về cả hai chỉ số **SMAPE** và **$R^2$**:
+
+| Tập dữ liệu | Khoảng dự báo | Mô hình | SMAPE (Test) | $R^2$ (Test) | SMAPE (Outage) | $R^2$ (Outage) | Mức cải thiện SMAPE tương đối |
 | :--- | :---: | :--- | :---: | :---: | :---: | :---: | :---: |
-| **Institutions** | **24h** | Paper Best (Mean)<br>Local Best (Transformer)<br>**ISPNet (Ours)** | 97.46%<br>62.23%<br>**60.84%** | 0.027<br>-3.673<br>**0.251** | -<br>-<br>**68.09%** | -<br>-<br>**0.228** | **-37.58% vs Paper**<br>**-2.23% vs Local Best** |
-| **Institutions** | **168h** | Paper Best (Mean)<br>Local Best (Transformer)<br>**ISPNet (Ours)** | 100.49%<br>71.36%<br>**67.75%** | -0.008<br>-0.205<br>**0.128** | -<br>-<br>**82.97%** | -<br>-<br>**-0.112** | **-32.58% vs Paper**<br>**-5.06% vs Local Best** |
-| **Subnets** | **24h** | Paper Best (Mean)<br>Local Best (GRU)<br>**ISPNet (Ours)** | 93.03%<br>61.85%<br>**60.15%** | 0.047<br>-1949.02<br>**-4621.07** | -<br>-<br>**67.11%** | -<br>-<br>**0.138** | **-35.34% vs Paper**<br>**-2.74% vs Local Best** |
-| **Subnets** | **168h** | Paper Best (Mean)<br>Local Best (Transformer)<br>**ISPNet (Ours)** | 97.93%<br>71.09%<br>**67.84%** | -0.001<br>-1481685.49<br>**-24894.48** | -<br>-<br>**83.87%** | -<br>-<br>**-0.380** | **-30.73% vs Paper**<br>**-4.58% vs Local Best** |
+| **Institutions** | **24h** | Paper Best (Mean)<br>Local Best (Transformer)<br>**ISPNet (Ours)** | 97.46%<br>62.23%<br>**60.84%** | 0.027<br>-3.673<br>**0.251** | -<br>-<br>**68.09%** | -<br>-<br>**0.228** | **-37.58% so với Paper**<br>**-2.23% so với Local Best** |
+| **Institutions** | **168h** | Paper Best (Mean)<br>Local Best (Transformer)<br>**ISPNet (Ours)** | 100.49%<br>71.36%<br>**67.75%** | -0.008<br>-0.205<br>**0.128** | -<br>-<br>**82.97%** | -<br>-<br>**-0.112** | **-32.58% so với Paper**<br>**-5.06% so với Local Best** |
+| **Subnets** | **24h** | Paper Best (Mean)<br>Local Best (GRU)<br>**ISPNet (Ours)** | 93.03%<br>61.85%<br>**60.15%** | 0.047<br>-1949.02<br>**-4621.07** | -<br>-<br>**67.11%** | -<br>-<br>**0.138** | **-35.34% so với Paper**<br>**-2.74% so với Local Best** |
+| **Subnets** | **168h** | Paper Best (Mean)<br>Local Best (Transformer)<br>**ISPNet (Ours)** | 97.93%<br>71.09%<br>**67.84%** | -0.001<br>-1481685.49<br>**-24894.48** | -<br>-<br>**83.87%** | -<br>-<br>**-0.380** | **-30.73% so với Paper**<br>**-4.58% so với Local Best** |
 
 ---
 
-## 📂 Directory Layout
+## 📂 Cấu trúc Thư mục
 
-The repository is organized following professional data science project layouts:
+Dự án được tổ chức theo cấu trúc tiêu chuẩn cho các dự án khoa học dữ liệu chuyên nghiệp:
 
 ```
 ISPNet-CESNET24/
-  ├── BaoCaoDoAn_TimeSeries.docx        # Graduation Thesis Report (DOCX version)
-  ├── BaoCaoDoAn_TimeSeries.pdf         # Graduation Thesis Report (PDF version)
-  ├── requirements.txt                  # Python package dependencies
-  ├── data/                             # Data files
-  │     ├── raw/                        # Original source data (ignored in git)
-  │     └── preprocessed/               # Preprocessed parquets (ignored in git)
-  ├── notebooks/                        # Jupyter Notebooks (Sequential Pipeline)
-  │     ├── 00_raw_eda.ipynb            # Exploratory Data Analysis on raw data
-  │     ├── 01_preprocessing_pipeline.ipynb # Scalers & feature engineering
-  │     ├── 02_processed_eda.ipynb      # EDA on processed datasets
-  │     ├── 03_classical_baselines.ipynb # Historical Mean/Median & MA baselines
-  │     ├── 04_sarima_baseline.ipynb    # SARIMA forecasting
-  │     ├── 05_dl_baselines_daily.ipynb # Deep Learning models (Daily Institutions)
-  │     ├── 05_dl_baselines_daily_subnets.ipynb # Deep Learning models (Daily Subnets)
-  │     ├── 05_dl_baselines_weekly.ipynb # Deep Learning models (Weekly Institutions)
-  │     ├── 05_dl_baselines_weekly_subnets.ipynb # Deep Learning models (Weekly Subnets)
-  │     ├── 06_proposed_ispnet_daily.ipynb # Proposed ISPNet (Daily Institutions)
-  │     ├── 06_proposed_ispnet_daily_subnets.ipynb # Proposed ISPNet (Daily Subnets)
-  │     ├── 06_proposed_ispnet_weekly.ipynb # Proposed ISPNet (Weekly Institutions)
-  │     ├── 06_proposed_ispnet_weekly_subnets.ipynb # Proposed ISPNet (Weekly Subnets)
-  │     └── 07_ablation_ispnet_daily.ipynb # Ablation study (Daily)
-  └── results/                          # Structured outputs
-        ├── baselines/                  # Classical baseline tables & plots
-        ├── eda_figures/                # Visualizations from EDA notebooks
-        ├── extra_analysis/             # paired entity CSVs & statistical tests
-        ├── daily/                      # Daily model output (.csv metrics, curves)
-        │     ├── baselines/            # DL baseline metrics
-        │     ├── baselines_subnets/    # Subnets DL baseline metrics
-        │     ├── proposed/             # Proposed ISPNet Daily
-        │     └── proposed_subnets/     # Proposed ISPNet Daily Subnets
-        └── weekly/                     # Weekly model output (.csv metrics, curves)
-              ├── baselines/            # DL baseline metrics
-              ├── baselines_subnets/    # Subnets DL baseline metrics
-              ├── proposed/             # Proposed ISPNet Weekly
-              └── proposed_subnets/     # Proposed ISPNet Weekly Subnets
+  ├── BaoCaoDoAn_TimeSeries.docx        # Báo cáo đồ án tốt nghiệp (Bản DOCX)
+  ├── BaoCaoDoAn_TimeSeries.pdf         # Báo cáo đồ án tốt nghiệp (Bản PDF)
+  ├── requirements.txt                  # Các thư viện Python cần cài đặt
+  ├── data/                             # Thư mục chứa dữ liệu
+  │     ├── raw/                        # Dữ liệu thô ban đầu (được bỏ qua trong git)
+  │     └── preprocessed/               # Dữ liệu dạng Parquet sau tiền xử lý (được bỏ qua trong git)
+  ├── notebooks/                        # Các file Jupyter Notebooks chạy theo luồng
+  │     ├── 00_raw_eda.ipynb            # Phân tích khám phá dữ liệu (EDA) trên dữ liệu thô
+  │     ├── 01_preprocessing_pipeline.ipynb # Tiền xử lý, chuẩn hóa & trích xuất đặc trưng
+  │     ├── 02_processed_eda.ipynb      # EDA trên tập dữ liệu đã qua xử lý
+  │     ├── 03_classical_baselines.ipynb # Các mô hình baseline cổ điển (Mean, Median, MA)
+  │     ├── 04_sarima_baseline.ipynb    # Dự báo bằng mô hình SARIMA
+  │     ├── 05_dl_baselines_daily.ipynb # Học sâu baseline (Dự báo ngày cho Institutions)
+  │     ├── 05_dl_baselines_daily_subnets.ipynb # Học sâu baseline (Dự báo ngày cho Subnets)
+  │     ├── 05_dl_baselines_weekly.ipynb # Học sâu baseline (Dự báo tuần cho Institutions)
+  │     ├── 05_dl_baselines_weekly_subnets.ipynb # Học sâu baseline (Dự báo tuần cho Subnets)
+  │     ├── 06_proposed_ispnet_daily.ipynb # Mô hình đề xuất ISPNet (Dự báo ngày cho Institutions)
+  │     ├── 06_proposed_ispnet_daily_subnets.ipynb # Mô hình đề xuất ISPNet (Dự báo ngày cho Subnets)
+  │     ├── 06_proposed_ispnet_weekly.ipynb # Mô hình đề xuất ISPNet (Dự báo tuần cho Institutions)
+  │     ├── 06_proposed_ispnet_weekly_subnets.ipynb # Mô hình đề xuất ISPNet (Dự báo tuần cho Subnets)
+  │     └── 07_ablation_ispnet_daily.ipynb # Ablation study khảo sát các thành phần của ISPNet
+  └── results/                          # Thư mục lưu kết quả đầu ra
+        ├── baselines/                  # Kết quả và biểu đồ của baseline cổ điển
+        ├── eda_figures/                # Các biểu đồ trực quan hóa từ các file EDA
+        ├── extra_analysis/             # Các phân tích bổ sung và kiểm định thống kê
+        ├── daily/                      # Kết quả dự báo hàng ngày (file CSV & biểu đồ)
+        │     ├── baselines/            # Metrics của các mô hình học sâu baseline
+        │     ├── baselines_subnets/    # Metrics của các subnet baseline
+        │     ├── proposed/             # Metrics của ISPNet Daily đề xuất
+        │     └── proposed_subnets/     # Metrics của ISPNet Daily Subnets đề xuất
+        └── weekly/                     # Kết quả dự báo hàng tuần (file CSV & biểu đồ)
+              ├── baselines/            # Metrics của các mô hình học sâu baseline
+              ├── baselines_subnets/    # Metrics của các subnet baseline
+              ├── proposed/             # Metrics của ISPNet Weekly đề xuất
+              └── proposed_subnets/     # Metrics của ISPNet Weekly Subnets đề xuất
 ```
 
 ---
 
-## 🛠️ Getting Started
+## 🛠️ Hướng dẫn Cài đặt & Sử dụng
 
-### 1. Installation & Environment Setup
-Clone the repository and install the dependencies:
+### 1. Cài đặt môi trường
+Sao chép repository này về máy và cài đặt các thư viện cần thiết:
 ```bash
 git clone https://github.com/nvtanphat/ISPNet-CESNET24.git
 cd ISPNet-CESNET24
 pip install -r requirements.txt
 ```
 
-### 2. Dataset Setup
-You can set up the dataset in one of two ways:
+### 2. Thiết lập tập dữ liệu
+Bạn có thể lựa chọn 1 trong 2 cách sau:
 
-* **Option A: Preprocessed Dataset (Recommended & Faster)**:
-  Download our preprocessed dataset directly from [Kaggle: CESNET-TimeSeries24 Preprocessed](https://www.kaggle.com/datasets/nguynvntnpht/cesnet-timeseries24-preprocessed) and extract the contents into the `data/preprocessed/` directory. This allows you to skip the preprocessing notebooks and start running the model code directly.
+* **Cách A: Sử dụng dữ liệu đã tiền xử lý sẵn (Khuyên dùng & Nhanh hơn)**:
+  Tải bộ dữ liệu đã được tiền xử lý của chúng tôi trực tiếp từ [Kaggle: CESNET-TimeSeries24 Preprocessed](https://www.kaggle.com/datasets/nguynvntnpht/cesnet-timeseries24-preprocessed) và giải nén toàn bộ nội dung vào thư mục `data/preprocessed/`. Bạn sẽ không cần chạy notebook tiền xử lý nữa mà có thể bắt đầu huấn luyện mô hình ngay.
 
-* **Option B: Raw Dataset**:
-  1. Download the raw **CESNET-TimeSeries24** dataset from the official [Nature Scientific Data Paper](https://www.nature.com/articles/s41597-025-04603-x).
-  2. Extract the dataset files into the `data/raw/` directory.
+* **Cách B: Sử dụng dữ liệu thô ban đầu**:
+  1. Tải bộ dữ liệu thô **CESNET-TimeSeries24** chính thức từ liên kết trong bài báo [Nature Scientific Data Paper](https://www.nature.com/articles/s41597-025-04603-x).
+  2. Giải nén dữ liệu thô vào thư mục `data/raw/`.
 
-### 3. Pipeline Execution
-Run the notebooks in sequential order:
-1. **Preprocessing**: (Skip this if you used Option A for dataset setup) Open and run [01_preprocessing_pipeline.ipynb](notebooks/01_preprocessing_pipeline.ipynb) to clean the telemetry and generate parquet features.
-2. **Classical Baselines**: Run [03_classical_baselines.ipynb](notebooks/03_classical_baselines.ipynb) and [04_sarima_baseline.ipynb](notebooks/04_sarima_baseline.ipynb).
-3. **Deep Learning Baselines**: Run the notebooks starting with `05_` to train and evaluate LSTM, GRU, TCN, PatchTST, and iTransformer.
-4. **ISPNet**: Run the notebooks starting with `06_` to train the proposed ISPNet and generate comparison tables against the baselines.
-
----
-
-## 📚 References
-
-* **Official Dataset Paper**: ["CESNET-TimeSeries24: A dataset of network traffic time series at the institution and subnet level"](https://www.nature.com/articles/s41597-025-04603-x) (Scientific Data, 2025).
+### 3. Quy trình thực hiện
+Mở và chạy tuần tự các notebook trong thư mục `notebooks/`:
+1. **Tiền xử lý (Preprocessing)**: (Bỏ qua nếu chọn Cách A) Chạy file [01_preprocessing_pipeline.ipynb](notebooks/01_preprocessing_pipeline.ipynb) để xử lý các điểm khuyết telemetry và tạo các tệp Parquet đặc trưng.
+2. **Classical Baselines**: Chạy [03_classical_baselines.ipynb](notebooks/03_classical_baselines.ipynb) và [04_sarima_baseline.ipynb](notebooks/04_sarima_baseline.ipynb).
+3. **Deep Learning Baselines**: Chạy các file bắt đầu bằng `05_` để huấn luyện và đánh giá các mô hình LSTM, GRU, TCN, PatchTST và iTransformer.
+4. **ISPNet (Mô hình Đề xuất)**: Chạy các file bắt đầu bằng `06_` để huấn luyện mô hình ISPNet và xuất bảng so sánh kết quả thực nghiệm.
 
 ---
 
-## 📜 Citation
+## 📚 Tài liệu Tham khảo
 
-If you find this repository or the graduation thesis helpful for your research, please cite it as:
+* **Bài báo chính thức của bộ dữ liệu**: ["CESNET-TimeSeries24: A dataset of network traffic time series at the institution and subnet level"](https://www.nature.com/articles/s41597-025-04603-x) (Scientific Data, 2025).
+
+---
+
+## 📜 Trích dẫn (Citation)
+
+Nếu bạn sử dụng repository này hoặc các kết quả từ báo cáo đồ án tốt nghiệp này phục vụ cho nghiên cứu của mình, vui lòng trích dẫn theo định dạng sau:
 
 ```bibtex
 @thesis{nvtanphat2026ispnet,
@@ -136,8 +136,8 @@ If you find this repository or the graduation thesis helpful for your research, 
 }
 ```
 
-## ✉️ Contact
+## ✉️ Liên hệ
 
-For any questions or collaborations, please contact:
-* **Author**: Nguyen Van Tan Phat
+Mọi thắc mắc hoặc nhu cầu hợp tác nghiên cứu vui lòng liên hệ:
+* **Tác giả**: Nguyễn Văn Tấn Phát
 * **GitHub**: [@nvtanphat](https://github.com/nvtanphat)
