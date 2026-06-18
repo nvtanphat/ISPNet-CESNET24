@@ -5,23 +5,23 @@
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-yellowgreen.svg)](https://opensource.org/licenses/Apache-2.0)
 [![Jupyter Notebooks](https://img.shields.io/badge/Jupyter-Notebooks-orange.svg)](https://jupyter.org/)
 
-Repository này chứa mã nguồn triển khai **ISPNet** — một khung học sâu (deep learning framework) chuyên dụng cho bài toán dự báo lưu lượng băng thông mạng diện rộng, có độ hỗn tạp cao của Nhà cung cấp dịch vụ Internet (ISP), được thử nghiệm trên bộ dữ liệu thực tế **CESNET-TimeSeries24**.
+Repository này chứa mã nguồn triển khai **ISPNet** — một mô hình học sâu (deep learning framework) cho bài toán dự báo lưu lượng băng thông mạng diện rộng của Nhà cung cấp dịch vụ Internet (ISP), được thử nghiệm trên bộ dữ liệu thực tế **CESNET-TimeSeries24**.
 
 Dự án thực hiện mô hình hóa và dự báo lưu lượng băng thông theo giờ (tính bằng bytes) trên **283 tổ chức và mạng con (subnets)** cho cả hai khoảng thời gian dự báo (horizons): **24 giờ** và **168 giờ (1 tuần)**.
 
 ---
 
-## 🚀 Điểm nổi bật chính
+## 🚀 Các đóng góp chính
 
 * **Giảm từ 30% đến 37% chỉ số SMAPE** so với các mô hình baseline trung bình trong bài báo gốc của bộ dữ liệu.
-* **Vượt trội hơn 7 mô hình học sâu baseline phổ biến**: LSTM, GRU, TCN, DLinear, Transformer, PatchTST, và iTransformer.
-* **Xử lý telemetry thông minh**: Tích hợp cơ chế tăng cường nhiễu có quan sát mặt nạ (mask-aware noise augmentation) và hàm mất mát Masked Huber Loss cải tiến để xử lý triệt để các khoảng trống mất dữ liệu telemetry (tỷ lệ khuyết 1.1%) và các đỉnh xung đột đột biến (traffic spikes).
+* **Kết quả SMAPE thấp hơn so với 7 mô hình baseline học sâu**: LSTM, GRU, TCN, DLinear, Transformer, PatchTST, và iTransformer.
+* **Xử lý khoảng khuyết telemetry**: Tích hợp cơ chế tăng cường nhiễu có quan sát mặt nạ (mask-aware noise augmentation) và hàm mất mát Masked Huber Loss cải tiến để khắc phục ảnh hưởng từ các khoảng trống mất dữ liệu telemetry (tỷ lệ khuyết 1.1%) và các đỉnh lưu lượng đột biến (traffic spikes).
 
 ---
 
 ## 🧠 Kiến trúc Mô hình Đề xuất: ISPNet
 
-Dự báo lưu lượng trên hàng trăm thực thể mạng khác nhau (từ các mạng con nghiên cứu quy mô nhỏ cho đến các trường đại học quốc gia lớn) là một thách thức cực kỳ lớn do tính chất quy mô và baseline lưu lượng chênh lệch cao. **ISPNet** được xây dựng dựa trên cấu trúc **GRU Encoder-Decoder** (2 lớp, ẩn 64, dropout 0.4) và giải quyết các bài toán trên thông qua các nguyên lý thiết kế cốt lõi sau:
+Dự báo lưu lượng trên nhiều thực thể mạng khác nhau (từ các mạng con nghiên cứu quy mô nhỏ đến các trường đại học quốc gia lớn) gặp khó khăn do sự chênh lệch lớn về quy mô và mức nền lưu lượng (baseline traffic). Phương pháp **ISPNet** được xây dựng dựa trên cấu trúc **GRU Encoder-Decoder** (2 lớp, ẩn số 64, dropout 0.4) và được thiết kế theo các nguyên lý sau:
 
 1. **Chuẩn hóa động theo cửa sổ có xét mặt nạ (Mask-Aware Reversible Instance Normalization - RevIN)**:
    Để chống lại sự trôi dịch phân phối (distribution shift) và biến động mức nền thời gian, thống kê trung bình ($\mu$) và phương sai ($\sigma^2$) được tính động theo từng cửa sổ đầu vào $X = [x_1, x_2, \dots, x_L]$ nhưng **chỉ dựa trên các vị trí có dữ liệu telemetry thực tế** (nơi mặt nạ quan sát $m_t = 1$):
@@ -31,19 +31,19 @@ Dự báo lưu lượng trên hàng trăm thực thể mạng khác nhau (từ c
    (trong đó $c_t$ là các đặc trưng lịch thời gian).
 
 2. **Thành phần bù độ lệch theo từng thực thể (Per-Entity Output Bias - $b_{e,h}$)**:
-   Để bù đắp sự chênh lệch quy mô lưu lượng khổng lồ giữa các thực thể (lên tới $8.26 \times 10^7$ lần), một lớp nhúng nhúng (`nn.Embedding` kích thước $N_{entities} \times H$, khởi tạo bằng 0) được sử dụng để ánh xạ ID của thực thể mạng thành một độ lệch cụ thể cho từng bước dự báo $h$, cộng trực tiếp vào đầu ra sau khi đã được giải chuẩn hóa về thang logarit:
+   Để bù đắp sự chênh lệch quy mô lưu lượng giữa các thực thể (lên tới $8.26 \times 10^7$ lần), một lớp nhúng (`nn.Embedding` kích thước $N_{entities} \times H$, khởi tạo bằng 0) được sử dụng để ánh xạ ID của thực thể mạng thành một độ lệch cụ thể cho từng bước dự báo $h$, cộng trực tiếp vào đầu ra sau khi đã được giải chuẩn hóa về thang logarit:
    $$\hat{y}_{t+h}^{\log} = \hat{z}_{t+h}\sqrt{\sigma^2 + \epsilon} + \mu + b_{e,h}$$
-   Cơ chế này giúp giữ nguyên cấu trúc tham số backbone GRU gọn nhẹ (88.009 tham số ở cấp tổ chức) nhưng vẫn cá nhân hóa dự báo hiệu quả cho từng thực thể.
+   Cơ chế này giữ cấu trúc tham số backbone GRU ổn định ở mức 88.009 tham số (ở cấp tổ chức) nhưng vẫn cho phép điều chỉnh dự báo theo từng thực thể.
 
 3. **Hàm mất mát Masked Huber Loss tối ưu cho ISP**:
-   Hàm Huber Loss được cấu hình với $\delta = 1.0$ (tương ứng với 1 IQR của dữ liệu lưu lượng sau chuẩn hóa), hoạt động bình phương cho sai số nhỏ và tuyến tính cho các đỉnh xung đột biến (traffic spikes). Hàm mất mát chỉ được tính toán tại các thời điểm có telemetry thực sự (tránh rò rỉ hoặc bị kéo đạo hàm bởi các điểm khuyết telemetry):
+   Hàm Huber Loss được cấu hình với $\delta = 1.0$ (tương ứng với 1 IQR của dữ liệu lưu lượng sau chuẩn hóa), hoạt động bình phương cho sai số nhỏ và tuyến tính cho các đỉnh lưu lượng đột biến (traffic spikes). Hàm mất mát chỉ được tính toán tại các thời điểm có telemetry thực sự (tránh rò rỉ hoặc bị kéo đạo hàm bởi các điểm khuyết telemetry):
    $$\mathcal{L} = \frac{\sum_{h=1}^H m_{t+h} H_\delta(r_{t+h})}{\sum_{h=1}^H m_{t+h} + \epsilon}$$
 
 ---
 
 ## 📊 Kết quả Thực nghiệm
 
-Được đánh giá trên tập kiểm thử (Test Split) và trong các khoảng thời gian xảy ra sự cố telemetry (Outage Windows), **ISPNet** thể hiện sự vượt trội vượt bậc về cả hai chỉ số **SMAPE** và **$R^2$**:
+Kết quả đánh giá trên tập kiểm thử (Test Split) và trong các khoảng thời gian xảy ra sự cố telemetry (Outage Windows) đối với chỉ số **SMAPE** và **$R^2$**:
 
 | Tập dữ liệu | Khoảng dự báo | Mô hình | SMAPE (Test) | $R^2$ (Test) | SMAPE (Outage) | $R^2$ (Outage) | Mức cải thiện SMAPE tương đối |
 | :--- | :---: | :--- | :---: | :---: | :---: | :---: | :---: |
@@ -113,7 +113,7 @@ pip install -r requirements.txt
 Bạn có thể lựa chọn 1 trong 2 cách sau:
 
 * **Cách A: Sử dụng dữ liệu đã tiền xử lý sẵn (Khuyên dùng & Nhanh hơn)**:
-  Tải bộ dữ liệu đã được tiền xử lý của chúng tôi trực tiếp từ [Kaggle: CESNET-TimeSeries24 Preprocessed](https://www.kaggle.com/datasets/nguynvntnpht/cesnet-timeseries24-preprocessed) và giải nén toàn bộ nội dung vào thư mục `data/preprocessed/`. Bạn sẽ không cần chạy notebook tiền xử lý nữa mà có thể bắt đầu huấn luyện mô hình ngay.
+  Tải bộ dữ liệu đã được tiền xử lý tại [Kaggle: CESNET-TimeSeries24 Preprocessed](https://www.kaggle.com/datasets/nguynvntnpht/cesnet-timeseries24-preprocessed) và giải nén toàn bộ nội dung vào thư mục `data/preprocessed/`. Bạn sẽ không cần chạy notebook tiền xử lý nữa mà có thể bắt đầu huấn luyện mô hình ngay.
 
 * **Cách B: Sử dụng dữ liệu thô ban đầu**:
   1. Tải bộ dữ liệu thô **CESNET-TimeSeries24** chính thức từ liên kết trong bài báo [Nature Scientific Data Paper](https://www.nature.com/articles/s41597-025-04603-x).
