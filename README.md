@@ -60,8 +60,8 @@ Dự án được tổ chức theo cấu trúc tiêu chuẩn cho các dự án k
 
 ```
 ISPNet-CESNET24/
-  ├── BaoCaoDoAn_TimeSeries.docx        # Báo cáo đồ án tốt nghiệp (Bản DOCX)
-  ├── BaoCaoDoAn_TimeSeries.pdf         # Báo cáo đồ án tốt nghiệp (Bản PDF)
+  ├── BaoCaoDoAn_TimeSeries.docx        # Báo cáo đồ án môn học (Bản DOCX)
+  ├── BaoCaoDoAn_TimeSeries.pdf         # Báo cáo đồ án môn học (Bản PDF)
   ├── requirements.txt                  # Các thư viện Python cần cài đặt
   ├── data/                             # Thư mục chứa dữ liệu
   │     ├── raw/                        # Dữ liệu thô ban đầu (được bỏ qua trong git)
@@ -136,7 +136,7 @@ Mở và chạy tuần tự các notebook trong thư mục `notebooks/`:
 
 ## 📜 Trích dẫn (Citation)
 
-Nếu bạn sử dụng repository này hoặc các kết quả từ báo cáo đồ án tốt nghiệp này phục vụ cho nghiên cứu của mình, vui lòng trích dẫn theo định dạng sau:
+Nếu bạn sử dụng repository này hoặc các kết quả từ báo cáo đồ án môn học này phục vụ cho nghiên cứu của mình, vui lòng trích dẫn theo định dạng sau:
 
 ```bibtex
 @thesis{phatvunguyen2026deep,
@@ -144,7 +144,7 @@ Nếu bạn sử dụng repository này hoặc các kết quả từ báo cáo �
   title        = {Xây dựng và đánh giá mô hình học sâu cho dự báo chuỗi thời gian lưu lượng mạng ISP},
   school       = {Phân hiệu Trường Đại học Thủy lợi},
   year         = {2026},
-  type         = {Đồ án tốt nghiệp đại học},
+  type         = {Đồ án môn học},
   url          = {https://github.com/nvtanphat/ISPNet-CESNET24}
 }
 ```
