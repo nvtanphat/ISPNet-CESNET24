@@ -47,14 +47,91 @@ Dự báo lưu lượng trên nhiều thực thể mạng khác nhau (từ các 
 
 ## 📊 Kết quả Thực nghiệm
 
-Kết quả đánh giá trên tập kiểm thử (Test Split) và trong các khoảng thời gian xảy ra sự cố telemetry (Outage Windows) đối với chỉ số **SMAPE** và **$R^2$**:
+Dưới đây là kết quả đối sánh toàn diện của mô hình đề xuất **ISPNet** với các baseline cổ điển, baseline học sâu và nghiên cứu loại bỏ (Ablation Study) dựa trên số liệu thực tế được ghi nhận trong báo cáo đồ án môn học.
 
-| Tập dữ liệu | Khoảng dự báo | Mô hình | SMAPE (Test) | $R^2$ (Test) | SMAPE (Outage) | $R^2$ (Outage) | Mức cải thiện SMAPE tương đối |
+### 1. Đối chiếu tổng quan với Paper Benchmark (Global Weighted Metrics)
+*(So sánh gộp toàn cục giữa mô hình cơ sở tốt nhất của bài báo gốc, Local DL Baseline tốt nhất và **ISPNet**)*
+
+| Tập dữ liệu | Khoảng dự báo | Mô hình | SMAPE (Test) | $R^2$ (Test) | SMAPE (Outage) | $R^2$ (Outage) | Mức cải thiện SMAPE |
 | :--- | :---: | :--- | :---: | :---: | :---: | :---: | :---: |
-| **Institutions** | **24h** | Paper Best (Mean)<br>Local Best (Transformer)<br>**ISPNet (Ours)** | 97.46%<br>62.23%<br>**60.84%** | 0.027<br>-3.673<br>**0.251** | -<br>-<br>**68.09%** | -<br>-<br>**0.228** | **-37.58% so với Paper**<br>**-2.23% so với Local Best** |
-| **Institutions** | **168h** | Paper Best (Mean)<br>Local Best (Transformer)<br>**ISPNet (Ours)** | 100.49%<br>71.36%<br>**67.75%** | -0.008<br>-0.205<br>**0.128** | -<br>-<br>**82.97%** | -<br>-<br>**-0.112** | **-32.58% so với Paper**<br>**-5.06% so với Local Best** |
-| **Subnets** | **24h** | Paper Best (Mean)<br>Local Best (GRU)<br>**ISPNet (Ours)** | 93.03%<br>61.85%<br>**60.15%** | 0.047<br>-1949.02<br>**-4621.07** | -<br>-<br>**67.11%** | -<br>-<br>**0.138** | **-35.34% so với Paper**<br>**-2.74% so với Local Best** |
-| **Subnets** | **168h** | Paper Best (Mean)<br>Local Best (Transformer)<br>**ISPNet (Ours)** | 97.93%<br>71.09%<br>**67.84%** | -0.001<br>-1481685.49<br>**-24894.48** | -<br>-<br>**83.87%** | -<br>-<br>**-0.380** | **-30.73% so với Paper**<br>**-4.58% so với Local Best** |
+| **Institutions** | **24h (Daily)** | Paper Best (Mean)<br>Local Best (Transformer)<br>**ISPNet (Ours)** | 97.46%<br>62.23%<br>**60.84%** | 0.027<br>-3.673<br>**0.251** | -<br>-<br>**68.09%** | -<br>-<br>**0.228** | **-37.58% so với Paper**<br>**-2.23% so với Local Best** |
+| **Institutions** | **168h (Weekly)** | Paper Best (Mean)<br>Local Best (Transformer)<br>**ISPNet (Ours)** | 100.49%<br>71.36%<br>**67.75%** | -0.008<br>-0.205<br>**0.128** | -<br>-<br>**82.97%** | -<br>-<br>**-0.112** | **-32.58% so với Paper**<br>**-5.06% so với Local Best** |
+| **Subnets** | **24h (Daily)** | Paper Best (Mean)<br>Local Best (GRU)<br>**ISPNet (Ours)** | 93.03%<br>61.85%<br>**60.15%** | 0.047<br>-1949.02<br>**-4621.07** | -<br>-<br>**67.11%** | -<br>-<br>**0.138** | **-35.34% so với Paper**<br>**-2.74% so với Local Best** |
+| **Subnets** | **168h (Weekly)** | Paper Best (Mean)<br>Local Best (Transformer)<br>**ISPNet (Ours)** | 97.93%<br>71.09%<br>**67.84%** | -0.001<br>-1481685.49<br>**-24894.48** | -<br>-<br>**83.87%** | -<br>-<br>**-0.380** | **-30.73% so với Paper**<br>**-4.58% so với Local Best** |
+
+### 2. Bảng đối sánh chi tiết theo thực thể (Per-Entity Median over 3 Seeds)
+*(Chỉ số Trung vị - Median của các thực thể mạng, ký hiệu ± biểu diễn Độ lệch chuẩn - standard deviation qua 3 seed chạy ngẫu nhiên)*
+
+#### A. Dự báo ngày (Horizon 24h)
+* **Institutions (Daily)**
+  | Mô hình | SMAPE median ↓ (±std) | $R^2$ median ↑ (±std) | RMSE ↓ (±std) |
+  | :--- | :---: | :---: | :---: |
+  | LSTM | 63.63 ± 0.20 | 0.2300 ± 0.0044 | 0.0614 ± 0.0003 |
+  | GRU | 63.13 ± 0.19 | 0.2416 ± 0.0119 | 0.0605 ± 0.0005 |
+  | TCN | 64.32 ± 0.35 | 0.1856 ± 0.0033 | 0.0637 ± 0.0008 |
+  | DLinear | 67.05 ± 0.09 | 0.1944 ± 0.0053 | 0.0623 ± 0.0006 |
+  | Transformer | 62.87 ± 0.15 | 0.2246 ± 0.0168 | 0.0602 ± 0.0008 |
+  | PatchTST | 65.56 ± 0.50 | 0.1949 ± 0.0044 | 0.0631 ± 0.0005 |
+  | iTransformer | 65.45 ± 0.42 | 0.2069 ± 0.0027 | 0.0617 ± 0.0001 |
+  | **ISPNet (Ours)** | **62.39 ± 0.33** | **0.2643 ± 0.0138** | **0.0591 ± 0.0005** |
+
+* **Subnets (Daily)**
+  | Mô hình | SMAPE median ↓ (±std) | $R^2$ median ↑ (±std) | RMSE ↓ (±std) |
+  | :--- | :---: | :---: | :---: |
+  | LSTM | 61.70 ± 0.55 | 0.0972 ± 0.0083 | 0.0676 ± 0.0006 |
+  | GRU | 60.62 ± 0.08 | 0.0954 ± 0.0103 | 0.0669 ± 0.0006 |
+  | TCN | 61.70 ± 0.40 | 0.0672 ± 0.0164 | 0.0700 ± 0.0009 |
+  | DLinear | 63.20 ± 0.18 | 0.0796 ± 0.0007 | 0.0688 ± 0.0001 |
+  | Transformer | 60.49 ± 0.12 | 0.0947 ± 0.0136 | 0.0671 ± 0.0011 |
+  | PatchTST | 62.53 ± 0.18 | 0.0685 ± 0.0046 | 0.0688 ± 0.0004 |
+  | iTransformer | 61.76 ± 0.25 | 0.0912 ± 0.0062 | 0.0675 ± 0.0002 |
+  | **ISPNet (Ours)** | **58.81 ± 0.21** | **0.1146 ± 0.0023** | **0.0653 ± 0.0001** |
+
+#### B. Dự báo tuần (Horizon 168h)
+* **Institutions (Weekly)**
+  | Mô hình | SMAPE median ↓ (±std) | $R^2$ median ↑ (±std) | RMSE ↓ (±std) |
+  | :--- | :---: | :---: | :---: |
+  | LSTM | 72.36 ± 0.43 | 0.0984 ± 0.0427 | 0.0718 ± 0.0019 |
+  | GRU | 72.19 ± 1.38 | 0.1249 ± 0.0357 | 0.0717 ± 0.0018 |
+  | TCN | 72.42 ± 1.24 | 0.1253 ± 0.0095 | 0.0696 ± 0.0009 |
+  | DLinear | 73.54 ± 0.83 | 0.0392 ± 0.0017 | 0.0732 ± 0.0005 |
+  | Transformer | 70.91 ± 0.27 | 0.1372 ± 0.0195 | 0.0693 ± 0.0011 |
+  | PatchTST | 78.56 ± 1.35 | -0.0128 ± 0.0114 | 0.0780 ± 0.0009 |
+  | iTransformer | 74.76 ± 0.31 | 0.0254 ± 0.0044 | 0.0725 ± 0.0005 |
+  | **ISPNet (Ours)** | **70.35 ± 0.92** | **0.1455 ± 0.0187** | **0.0667 ± 0.0008** |
+
+* **Subnets (Weekly)**
+  | Mô hình | SMAPE median ↓ (±std) | $R^2$ median ↑ (±std) | RMSE ↓ (±std) |
+  | :--- | :---: | :---: | :---: |
+  | LSTM | 67.59 ± 0.27 | 0.0131 ± 0.0040 | 0.0789 ± 0.0005 |
+  | GRU | 67.69 ± 0.42 | 0.0102 ± 0.0045 | 0.0794 ± 0.0007 |
+  | TCN | 67.50 ± 0.46 | 0.0172 ± 0.0032 | 0.0776 ± 0.0005 |
+  | DLinear | 68.46 ± 1.11 | 0.0019 ± 0.0079 | 0.0763 ± 0.0018 |
+  | Transformer | 67.60 ± 1.39 | 0.0167 ± 0.0085 | 0.0767 ± 0.0018 |
+  | PatchTST | 74.77 ± 0.60 | -0.0217 ± 0.0055 | 0.0830 ± 0.0009 |
+  | iTransformer | 69.66 ± 0.27 | -0.0075 ± 0.0014 | 0.0769 ± 0.0003 |
+  | **ISPNet (Ours)** | **65.85 ± 0.32** | **0.0224 ± 0.0054** | **0.0733 ± 0.0004** |
+
+### 3. Nghiên cứu loại bỏ (Ablation Study)
+*(Thực nghiệm khảo sát sự đóng góp của các thành phần trong ISPNet trên track Tổ chức - Horizon 24h)*
+
+| Biến thể | Thiết lập kiểm chứng | SMAPE median ↓ (±std) | $R^2$ median ↑ (±std) |
+| :--- | :---: | :---: | :---: |
+| **A - GRU** | Không sử dụng chuẩn hóa RevIN | 63.13 ± 0.19 | 0.2416 ± 0.0119 |
+| **B - GRU + Standard RevIN** | Chuẩn hóa động nhưng không xét mặt nạ (non-mask-aware) | 62.84 ± 0.64 | **0.2704 ± 0.0102** |
+| **C - ISPNet** | Đề xuất: Mask-Aware RevIN + GRU | **62.39 ± 0.33** | 0.2643 ± 0.0138 |
+| **D - ISPNet + FourierKAN** | Mask-Aware RevIN + Fourier KAN projection head | 62.80 ± 0.22 | 0.2569 ± 0.0052 |
+| **E - ISPNet + ChebyKAN** | Mask-Aware RevIN + Chebyshev KAN projection head | 62.59 ± 0.10 | 0.2539 ± 0.0008 |
+
+### 4. Đánh giá khả năng chống chịu sự cốTelemetry (Outage Analysis)
+*(So sánh sai số giữa thời gian hoạt động bình thường và thời gian xảy ra sự cố khuyết dữ liệu viễn thông)*
+
+| Tập dữ liệu | Khoảng dự báo | SMAPE Normal | SMAPE Outage | Mức tăng lệch điểm % | Nhận định |
+| :--- | :---: | :---: | :---: | :---: | :--- |
+| **Institutions** | **24h (Daily)** | 62.39% | 70.26% | +7.87% | Hoạt động ổn định, sai số tăng nhẹ dưới 8 điểm % |
+| **Institutions** | **168h (Weekly)** | 70.35% | 85.43% | +15.08% | Tăng sai số do khuyết dữ liệu kéo dài (1 tuần) |
+| **Subnets** | **24h (Daily)** | 58.81% | 66.29% | +7.49% | Chống nhiễu tốt ở các nhánh mạng con |
+| **Subnets** | **168h (Weekly)** | 65.85% | 82.49% | +16.64% | Sai số tăng trong tầm kiểm soát ở phân khúc phức tạp |
 
 ---
 
