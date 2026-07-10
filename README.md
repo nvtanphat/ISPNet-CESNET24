@@ -180,4 +180,4 @@ If you use this repository or our findings in your research, please cite:
 
 ## ✉️ Contact
 For questions or collaborations, please reach out to the project authors:
-* **Nguyễn Văn Tấn Phát** - GitHub: [nvtanphat69@gmail.com](nvtanphat69@gmail.com)
+* **Nguyễn Văn Tấn Phát** - Gmail: [nvtanphat69@gmail.com](nvtanphat69@gmail.com)
