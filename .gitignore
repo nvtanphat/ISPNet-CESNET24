@@ -35,3 +35,12 @@ results/archives/
 Thumbs.db
 .vscode/
 .idea/
+References/
+references/
+
+# Documents (Word, PDF)
+*.doc
+*.docx
+*.pdf
+
+
