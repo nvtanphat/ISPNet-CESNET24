@@ -167,9 +167,9 @@ If you use this repository or our findings in your research, please cite:
 
 ```bibtex
 @thesis{phat2026deep,
-  author       = {Nguy\^{e}n V\u{a}n T\^{a}n Ph\'{a}t},
-  title        = {X\^{a}y d\d{u}ng v\`{a} \dj{}\'{a}nh gi\'{a} m\^{o} h\`{i}nh h\d{o}c s\^{a}u cho d\d{u} b\'{a}o chu\~{o}i th\`{o}i gian l\u{u}u l\u{u}\d{n}g m\d{a}ng ISP},
-  school       = {Ph\^{a}n hi\d{e}u Tr\u{n}g \DJ{}\d{a}i h\d{o}c Th\d{u}y l\d{o}i},
+  author       = {Nguyễn Văn Tấn Phát},
+  title        = {Xây dựng và đánh giá mô hình học sâu cho dự báo chuỗi thời gian lưu lượng mạng ISP},
+  school       = {Phân hiệu Trường Đại học Thủy lợi},
   year         = {2026},
   type         = {Course Project},
   url          = {https://github.com/nvtanphat/ISPNet-CESNET24}
